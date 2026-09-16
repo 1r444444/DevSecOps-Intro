@@ -22,14 +22,14 @@ irina.bychkova06@mail.ru namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE
 
 ```text
 commit dfafa9d8b1cf56915830935c8392562d8900c59a
- Good "git" signature for irina.bychkova06@mail.ru with ED25519 key SHA256:<redacted>
+Good "git" signature for irina.bychkova06@mail.ru with ED25519 key SHA256:<redacted>
 Author: Irina <irina.bychkova06@mail.ru>
 Date:   Wed Sep 16 11:11:42 2026 +0300
 
     test: first signed commit
 ```
 
-GitHub Verified commit link: pending until the fork is created/pushed and the public key is registered in GitHub as a Signing Key.
+GitHub Verified commit link: https://github.com/1r444444/DevSecOps-Intro/commit/dfafa9d8b1cf56915830935c8392562d8900c59a
 
 With only an author line, someone could commit a malicious hook, workflow, or configuration change while making it look like it came from me. That creates a repudiation problem: the repository history can claim an identity without cryptographic proof. The Verified badge changes this by showing GitHub could validate the commit signature against a registered signing key, so forged authorship becomes visible during review.
 
