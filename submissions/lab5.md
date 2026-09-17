@@ -6,23 +6,23 @@ Target image: `bkimminich/juice-shop:v20.0.0`.
 
 ZAP command notes:
 - The unauthenticated baseline used `zap-baseline.py` against `http://juice-shop:3000`.
-- The authenticated run used ZAP Automation Framework with the `admin@juice-sh.op` account, bearer-token session management, requestor-seeded authenticated API endpoints, and an active scan over that small authenticated tree. The provided full Ajax-spider plan reached 773 URLs and was killed by the local Docker runtime, so I used the same ZAP toolchain with a narrower authenticated scope to produce a complete JSON report.
+- The authenticated run used the provided ZAP Automation Framework plan with the `admin@juice-sh.op` account, traditional spider, Ajax spider, passive scan, and active scan. The Ajax spider discovered 413 URLs, and the complete automation plan generated both report formats successfully.
 
 | Run | Time | High | Medium | Low | Info | Total alerts | Highest risk |
 |---|---:|---:|---:|---:|---:|---:|---|
 | Unauthenticated baseline | 58.95s | 0 | 2 | 5 | 3 | 10 | Medium |
-| Authenticated active scan | 1m 11.07s | 1 | 1 | 2 | 3 | 7 | High |
+| Authenticated full scan | ~22m | 2 | 4 | 3 | 4 | 13 | High |
 
-The unauthenticated baseline reported more alerts in total: 10 versus 7. The authenticated run found the more serious issue because it reached a High-risk `SQL Injection` alert on the login flow, while the baseline's highest level was Medium.
+The authenticated full scan reported more alerts in total: 13 versus 10. It also found the more serious issues because it reached High-risk `SQL Injection` and `Vulnerable JS Library` alerts, while the baseline's highest level was Medium.
 
 Authenticated-only alerts:
 
 | Alert | URL | Why baseline did not reach it |
 |---|---|---|
-| `SQL Injection` | `http://juice-shop:3000/rest/user/login` | The authenticated automation exercised the login request as part of the JSON authentication flow and active scan; the passive baseline only crawled anonymous GET traffic and did not actively mutate the login POST body. |
-| `Private IP Disclosure` | `http://juice-shop:3000/rest/admin/application-configuration` | This endpoint was seeded as an authenticated admin/API request with a bearer token. The anonymous baseline did not have an authenticated session or an explicit request to this protected API path. |
+| `SQL Injection` | `http://juice-shop:3000/rest/products/search?q=%27%28` | The baseline only observed anonymous traffic passively, whereas the authenticated full scan discovered the Angular search request and actively mutated its `q` parameter with an SQL payload. |
+| `Session ID in URL Rewrite` | `http://juice-shop:3000/socket.io/?EIO=4&transport=polling&sid=...` | The `sid` appears in Socket.IO polling traffic created while the authenticated browser session is running; the anonymous baseline did not log in or establish and crawl that session traffic. |
 
-"Number of alerts" is a weak comparison metric because it mixes duplicates, passive header findings, crawler coverage, and active exploitation evidence into one flat count. Here the smaller authenticated report is more important because it includes a High-risk SQL injection, while the larger baseline mostly found repeated header/cache issues. For a team lead, I would report coverage, highest risk, exploitability, and affected endpoints rather than only the total. A pipeline whose only DAST step is `zap-baseline.py` against staging can miss authenticated and active-scan-only defects, so it should add authenticated scanning for critical workflows and fail on severity/triage policy, not raw alert count.
+"Number of alerts" is a weak comparison metric because it mixes passive header findings, crawler coverage, and active exploitation evidence into one flat count. The difference here is only three alert types, but the authenticated report contains two High-risk findings while the baseline contains none. For a team lead, I would report coverage, highest risk, exploitability, and affected endpoints rather than only the total. A pipeline whose only DAST step is `zap-baseline.py` against staging can miss authenticated and active-scan-only defects, so it should add authenticated scanning for critical workflows and fail on severity/triage policy, not raw alert count.
 
 ## Task 2
 
@@ -62,15 +62,19 @@ Error count: 38.
 
 Workflow finding connected to Lecture 4: `yaml.github-actions.security.run-shell-injection.run-shell-injection` appears in `.github/workflows/update-challenges-www.yml:27` and related workflow files. This maps to CI/CD pipeline security from Lecture 4 because untrusted GitHub context interpolation inside `run:` can become command injection in the build runner and expose repository secrets.
 
-False positive I would suppress: `data/static/codefixes/dbSchemaChallenge_1.ts:5`, rule `javascript.sequelize.security.audit.sequelize-injection-express.express-sequelize-injection`.
+False positive I would suppress: `routes/keyServer.ts:14`, rule `javascript.express.security.audit.express-res-sendfile.express-res-sendfile`.
 
 The line is:
 
 ```ts
-models.sequelize.query("SELECT * FROM Products WHERE ((name LIKE '%"+criteria+"%' OR description LIKE '%"+criteria+"%') AND deletedAt IS NULL) ORDER BY name")
+const file = params.file
+
+if (!file.includes('/')) {
+  res.sendFile(path.resolve('encryptionkeys/', file))
+}
 ```
 
-It is a real vulnerable pattern, but this path is under `data/static/codefixes/`, which contains deliberately vulnerable teaching snippets shown by Juice Shop's code-fix/challenge material rather than the runtime Express route. I would suppress that path for production triage while keeping the same rule enabled for application routes such as `routes/login.ts` and `routes/search.ts`.
+The rule treats `params.file` as an unrestricted path reaching `sendFile`, but this handler rejects every value containing `/` before resolving it beneath the fixed `encryptionkeys/` directory. On the Linux Juice Shop image, an absolute path and each `../` traversal segment require `/`, while a backslash is an ordinary filename character rather than a separator. I would therefore suppress this specific finding after retaining a regression test for encoded and double-encoded separators; the same rule should remain enabled elsewhere.
 
 If I could fix one rule's findings this sprint, I would fix `javascript.sequelize.security.audit.sequelize-injection-express.express-sequelize-injection`. It has the highest count, includes runtime files such as `routes/login.ts:34` and `routes/search.ts:23`, and corresponds to exploitable OWASP A03 Injection behavior. The fix is to replace string-interpolated SQL with parameterized Sequelize queries/replacements and add regression tests for quote/comment payloads.
 
@@ -78,47 +82,39 @@ If I could fix one rule's findings this sprint, I would fix `javascript.sequeliz
 
 | OWASP category | ZAP alert and URL | Semgrep rule and source |
 |---|---|---|
-| A03: Injection | `SQL Injection` on `POST http://juice-shop:3000/rest/user/login` | `javascript.sequelize.security.audit.sequelize-injection-express.express-sequelize-injection`, `routes/login.ts:34` |
+| A03: Injection | `SQL Injection` on `GET http://juice-shop:3000/rest/products/search?q=%27%28` | `javascript.sequelize.security.audit.sequelize-injection-express.express-sequelize-injection`, `routes/search.ts:23` |
 
 Vulnerable source lines:
 
 ```ts
-return (req: Request, res: Response, next: NextFunction) => {
-  verifyPreLoginChallenges(req)
-  models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email || ''}' AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`, { model: UserModel, plain: true })
+let criteria: any = req.query.q === 'undefined' ? '' : req.query.q ?? ''
+criteria = (criteria.length <= 200) ? criteria : criteria.substring(0, 200)
+models.sequelize.query(`SELECT * FROM Products WHERE ((name LIKE '%${criteria}%' OR description LIKE '%${criteria}%') AND deletedAt IS NULL) ORDER BY name`)
 ```
 
 ZAP request evidence:
-- Method: `POST`
-- URL: `http://juice-shop:3000/rest/user/login`
-- Parameter: `email`
-- Attack payload: `'`
+- Method: `GET`
+- URL: `http://juice-shop:3000/rest/products/search?q=%27%28`
+- Parameter: `q`
+- Attack payload: `'(`
 - Evidence: `HTTP/1.1 500 Internal Server Error`
 
 Minimal reproducer:
 
 ```http
-POST /rest/user/login HTTP/1.1
+GET /rest/products/search?q=%27%28 HTTP/1.1
 Host: juice-shop:3000
-Content-Type: application/json
-
-{"email":"'","password":"admin123"}
 ```
 
-The fix I would open a PR with is to parameterize the query instead of interpolating `req.body.email` and the password hash into SQL:
+The fix I would open a PR with is to parameterize the query instead of interpolating `criteria` into SQL:
 
 ```ts
 models.sequelize.query(
-  'SELECT * FROM Users WHERE email = $email AND password = $password AND deletedAt IS NULL',
+  'SELECT * FROM Products WHERE ((name LIKE :criteria OR description LIKE :criteria) AND deletedAt IS NULL) ORDER BY name',
   {
-    bind: {
-      email: req.body.email || '',
-      password: security.hash(req.body.password || '')
-    },
-    model: UserModel,
-    plain: true
+    replacements: { criteria: `%${criteria}%` }
   }
 )
 ```
 
-I would put the SQL injection first in the PR description. It is independently confirmed by SAST and DAST, affects an authentication endpoint, has a concrete request-level reproducer, and maps to a high-impact OWASP Top 10 category.
+I would put the SQL injection first in the PR description. It is independently confirmed by SAST and DAST on the same search behavior, has a concrete request-level reproducer, and maps to a high-impact OWASP Top 10 category.
