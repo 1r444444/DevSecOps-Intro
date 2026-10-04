@@ -122,7 +122,9 @@ Commands:
 ```bash
 k3d cluster create lab7 --image rancher/k3s:v1.33.0-k3s1
 kubectl apply -f labs/lab7/k8s/namespace.yaml
-kubectl apply -f labs/lab7/k8s/
+kubectl apply -f labs/lab7/k8s/serviceaccount.yaml
+kubectl apply -f labs/lab7/k8s/networkpolicy.yaml
+kubectl apply -f labs/lab7/k8s/deployment.yaml
 kubectl -n juice-shop wait --for=condition=ready pod -l app=juice-shop --timeout=180s
 kubectl -n juice-shop get pod -l app=juice-shop -o yaml > labs/lab7/results/pod-spec.yaml
 kubectl -n juice-shop exec deploy/juice-shop -- \
@@ -187,6 +189,18 @@ C /juice-shop/.well-known/csaf/provider-metadata.json
 ```
 
 Bonus manifest: `labs/lab7/k8s/deployment-readonly.yaml`.
+
+The main and bonus manifests describe the same Deployment. Apply the main
+manifest for the Task 2 comparison, then apply only the bonus manifest to
+replace it; do not apply the entire directory.
+
+```bash
+kubectl apply -f labs/lab7/k8s/deployment-readonly.yaml
+kubectl -n juice-shop rollout status deployment/juice-shop --timeout=180s
+kubectl -n juice-shop port-forward deployment/juice-shop 3000:3000
+# In another terminal:
+curl -fsS -o /dev/null -w 'HTTP %{http_code}\n' http://127.0.0.1:3000/
+```
 
 Final volume layout:
 
