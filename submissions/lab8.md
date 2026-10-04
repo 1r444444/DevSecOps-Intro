@@ -20,7 +20,7 @@ Signed local-registry digest:
 127.0.0.1:5000/juice-shop@sha256:cbdfc00de875926f20ff603fac73c5b68577e37680cf2e0c324adda42ffc1113
 ```
 
-I selected the registry digest from the `Docker-Content-Digest` header for `127.0.0.1:5000/v2/juice-shop/manifests/v20.0.0`. `docker inspect` showed an image config digest too, but Cosign needs the registry manifest digest.
+I selected the registry digest from the `Docker-Content-Digest` header for `127.0.0.1:5000/v2/juice-shop/manifests/v20.0.0`. Docker retained the original multi-platform index digest in `RepoDigests`, while the local push stored a single-platform manifest. Cosign needs the digest actually stored in the local registry.
 
 ### Successful Verification
 
@@ -64,8 +64,33 @@ Component counts:
 
 | Source | Components |
 | --- | ---: |
-| `labs/lab4/juice-shop.cdx.json` | 905 |
-| `labs/lab8/results/sbom-from-attestation.json` | 905 |
+| Original `labs/lab4/juice-shop.cdx.json` from `feature/lab4` | 3068 |
+| `labs/lab8/results/sbom-from-attestation.json` | 3068 |
+
+I extracted the original committed Lab 4 SBOM without regenerating it, then
+attached and verified it using the same image digest and public key:
+
+```bash
+mkdir -p /tmp/lab8-original-sbom
+git archive feature/lab4 labs/lab4/juice-shop.cdx.json \
+  | tar -x -C /tmp/lab8-original-sbom
+cosign attest --key labs/lab8/keys/cosign.key --type cyclonedx \
+  --predicate /tmp/lab8-original-sbom/labs/lab4/juice-shop.cdx.json \
+  --use-signing-config=false --tlog-upload=false --allow-insecure-registry \
+  --yes 127.0.0.1:5000/juice-shop@sha256:cbdfc00de875926f20ff603fac73c5b68577e37680cf2e0c324adda42ffc1113
+cosign verify-attestation --key labs/lab8/keys/cosign.pub \
+  --insecure-ignore-tlog --allow-insecure-registry --type cyclonedx \
+  127.0.0.1:5000/juice-shop@sha256:cbdfc00de875926f20ff603fac73c5b68577e37680cf2e0c324adda42ffc1113 \
+  | jq -r '.payload | @base64d | fromjson | .predicate' \
+  > labs/lab8/results/sbom-from-attestation.json
+jq -e -s '.[0] == .[1]' \
+  /tmp/lab8-original-sbom/labs/lab4/juice-shop.cdx.json \
+  labs/lab8/results/sbom-from-attestation.json
+# true: the entire decoded SBOM matches the original, not only its count.
+```
+
+The earlier 905-component inventory was a newly generated Trivy SBOM, not the
+committed Lab 4 SBOM. The corrected attestation above uses the original file.
 
 Predicate types read from verified payloads:
 
@@ -115,11 +140,13 @@ A consumer needs the artifact and the signature bundle. The bundle may travel ov
 Published install instructions should make verification mandatory before execution:
 
 ```bash
+set -eu
+# cosign.pub must already be obtained through a trusted channel.
 curl -fsSLO https://downloads.example.com/my-tool.tar.gz
 curl -fsSLO https://downloads.example.com/my-tool.tar.gz.bundle
 cosign verify-blob --key cosign.pub \
   --bundle my-tool.tar.gz.bundle \
-  --insecure-ignore-tlog my-tool.tar.gz
+  --insecure-ignore-tlog my-tool.tar.gz || exit 1
 tar -xzf my-tool.tar.gz
 ./install.sh
 ```
