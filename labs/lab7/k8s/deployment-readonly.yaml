@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: juice-shop
+  namespace: juice-shop
+  labels:
+    app: juice-shop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: juice-shop
+  template:
+    metadata:
+      labels:
+        app: juice-shop
+    spec:
+      serviceAccountName: juice-shop
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: seed-writable-dirs
+          image: bkimminich/juice-shop@sha256:fd58bdc9745416afce8184ee0666278a436574633ea7880365153a63bfd418b0
+          command:
+            - /nodejs/bin/node
+            - -e
+            - |
+              const fs = require('fs');
+              const pairs = [
+                ['/juice-shop/data', '/seed/data'],
+                ['/juice-shop/ftp', '/seed/ftp'],
+                ['/juice-shop/i18n', '/seed/i18n'],
+                ['/juice-shop/frontend/dist/frontend', '/seed/frontend'],
+                ['/juice-shop/.well-known', '/seed/well-known'],
+              ];
+              for (const [src, dst] of pairs) {
+                fs.cpSync(src, dst, { recursive: true, force: true });
+              }
+              fs.mkdirSync('/seed/logs', { recursive: true });
+              fs.mkdirSync('/seed/tmp', { recursive: true });
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          volumeMounts:
+            - name: data
+              mountPath: /seed/data
+            - name: ftp
+              mountPath: /seed/ftp
+            - name: i18n
+              mountPath: /seed/i18n
+            - name: frontend
+              mountPath: /seed/frontend
+            - name: well-known
+              mountPath: /seed/well-known
+            - name: logs
+              mountPath: /seed/logs
+            - name: tmp
+              mountPath: /seed/tmp
+      containers:
+        - name: juice-shop
+          image: bkimminich/juice-shop@sha256:fd58bdc9745416afce8184ee0666278a436574633ea7880365153a63bfd418b0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+          volumeMounts:
+            - name: data
+              mountPath: /juice-shop/data
+            - name: ftp
+              mountPath: /juice-shop/ftp
+            - name: i18n
+              mountPath: /juice-shop/i18n
+            - name: frontend
+              mountPath: /juice-shop/frontend/dist/frontend
+            - name: well-known
+              mountPath: /juice-shop/.well-known
+            - name: logs
+              mountPath: /juice-shop/logs
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: ftp
+          emptyDir: {}
+        - name: i18n
+          emptyDir: {}
+        - name: frontend
+          emptyDir: {}
+        - name: well-known
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
