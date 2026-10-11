@@ -1,0 +1,17 @@
+- rule: Container Write Below Tmp
+  desc: Detect writes under /tmp from inside a container
+  condition: open_write and container.id != host and fd.name startswith /tmp/
+  output: Container wrote under /tmp (container=%container.name user=%user.name file=%fd.name command=%proc.cmdline)
+  priority: WARNING
+  tags: [container, drift]
+
+- rule: Suspicious Mining Pool Connection
+  desc: Detect a likely cryptominer process connecting to a common mining pool port
+  condition: >
+    evt.type=connect and container.id != host and
+    (fd.sport in (3333, 4444, 5555, 7777, 14444) or fd.rport in (3333, 4444, 5555, 7777, 14444) or
+     evt.arg.addr regex ".*:(3333|4444|5555|7777|14444)") and
+    (proc.name in (xmrig, minerd, cpuminer, ccminer, cryptonight, nc, ncat, netcat) or proc.cmdline contains "nc -w")
+  output: Suspicious mining pool connection (container=%container.name process=%proc.name command=%proc.cmdline destination=%fd.rip:%fd.rport requested_addr=%evt.arg.addr)
+  priority: CRITICAL
+  tags: [container, mitre_command_and_control]
