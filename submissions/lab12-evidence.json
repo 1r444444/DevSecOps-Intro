@@ -1,5 +1,5 @@
 {
-  "date_utc": "2026-10-18T11:19:07.887818+00:00",
+  "date_utc": "2026-10-18T13:00:02.626075+00:00",
   "host_kernel": "7.0.0-38-generic",
   "architecture": "aarch64",
   "image": {
@@ -32,14 +32,14 @@
       "device_count": 15,
       "cap_eff": "CapEff:\t00000000a80425fb",
       "startup_seconds": [
-        0.23637,
-        0.210596,
-        0.244292,
-        0.219394,
-        0.23769
+        0.287189,
+        0.247112,
+        0.300623,
+        0.237546,
+        0.306349
       ],
-      "startup_median_seconds": 0.23637,
-      "io": "536870912 bytes (512.0MB) copied, 0.764235 seconds, 670.0MB/s"
+      "startup_median_seconds": 0.287189,
+      "io": "536870912 bytes (512.0MB) copied, 2.098968 seconds, 243.9MB/s"
     },
     "kata": {
       "kernel": "6.18.35",
@@ -62,14 +62,14 @@
       "device_count": 14,
       "cap_eff": "CapEff:\t00000000a80425fb",
       "startup_seconds": [
-        12.717339,
-        12.084983,
-        11.653342,
-        12.041381,
-        10.961588
+        9.600411,
+        10.37438,
+        12.528694,
+        19.343573,
+        10.477538
       ],
-      "startup_median_seconds": 12.041381,
-      "io": "536870912 bytes (512.0MB) copied, 11.332115 seconds, 45.2MB/s"
+      "startup_median_seconds": 10.477538,
+      "io": "536870912 bytes (512.0MB) copied, 12.305138 seconds, 41.6MB/s"
     }
   },
   "memory_method": "PSS sum of new long-lived workload processes versus pre-start PID set; three samples, median",
@@ -79,160 +79,160 @@
         {
           "processes": [
             {
-              "pid": 10048,
-              "command": "/usr/local/bin/containerd-shim-runc-v2 -namespace lab12 -id 7cf099ab00d064770408ee21520c5dfe2b9305a1137dc46c5b1943ac71e97751 -address /run/containerd/containerd.sock",
-              "pss_kib": 10384
+              "pid": 7767,
+              "command": "/usr/local/bin/containerd-shim-runc-v2 -namespace lab12 -id 371efd8323898f65f5b1dc3b4a726e93688cb304f3a2fc72a6a2dc10299a3121 -address /run/containerd/containerd.sock",
+              "pss_kib": 10636
             },
             {
-              "pid": 10059,
+              "pid": 7779,
               "command": "/usr/local/bin/nerdctl _NERDCTL_INTERNAL_LOGGING /var/lib/nerdctl/1935db59",
-              "pss_kib": 29516
+              "pss_kib": 29688
             },
             {
-              "pid": 10085,
+              "pid": 7804,
               "command": "sleep 300",
-              "pss_kib": 840
+              "pss_kib": 856
             }
           ],
-          "total_pss_kib": 40740
+          "total_pss_kib": 41180
         },
         {
           "processes": [
             {
-              "pid": 10048,
-              "command": "/usr/local/bin/containerd-shim-runc-v2 -namespace lab12 -id 7cf099ab00d064770408ee21520c5dfe2b9305a1137dc46c5b1943ac71e97751 -address /run/containerd/containerd.sock",
-              "pss_kib": 10384
+              "pid": 7767,
+              "command": "/usr/local/bin/containerd-shim-runc-v2 -namespace lab12 -id 371efd8323898f65f5b1dc3b4a726e93688cb304f3a2fc72a6a2dc10299a3121 -address /run/containerd/containerd.sock",
+              "pss_kib": 10636
             },
             {
-              "pid": 10059,
+              "pid": 7779,
               "command": "/usr/local/bin/nerdctl _NERDCTL_INTERNAL_LOGGING /var/lib/nerdctl/1935db59",
-              "pss_kib": 29516
+              "pss_kib": 29688
             },
             {
-              "pid": 10085,
+              "pid": 7804,
               "command": "sleep 300",
-              "pss_kib": 840
+              "pss_kib": 856
             }
           ],
-          "total_pss_kib": 40740
+          "total_pss_kib": 41180
         },
         {
           "processes": [
             {
-              "pid": 10048,
-              "command": "/usr/local/bin/containerd-shim-runc-v2 -namespace lab12 -id 7cf099ab00d064770408ee21520c5dfe2b9305a1137dc46c5b1943ac71e97751 -address /run/containerd/containerd.sock",
-              "pss_kib": 10384
+              "pid": 7767,
+              "command": "/usr/local/bin/containerd-shim-runc-v2 -namespace lab12 -id 371efd8323898f65f5b1dc3b4a726e93688cb304f3a2fc72a6a2dc10299a3121 -address /run/containerd/containerd.sock",
+              "pss_kib": 10636
             },
             {
-              "pid": 10059,
+              "pid": 7779,
               "command": "/usr/local/bin/nerdctl _NERDCTL_INTERNAL_LOGGING /var/lib/nerdctl/1935db59",
-              "pss_kib": 29516
+              "pss_kib": 29688
             },
             {
-              "pid": 10085,
+              "pid": 7804,
               "command": "sleep 300",
-              "pss_kib": 840
+              "pss_kib": 856
             }
           ],
-          "total_pss_kib": 40740
+          "total_pss_kib": 41180
         }
       ],
-      "median_pss_kib": 40740
+      "median_pss_kib": 41180
     },
     "kata": {
       "samples": [
         {
           "processes": [
             {
-              "pid": 10323,
-              "command": "/opt/kata/bin/containerd-shim-kata-v2 -namespace lab12 -address /run/containerd/containerd.sock -publish-binary  -id d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92",
-              "pss_kib": 35412
+              "pid": 8038,
+              "command": "/opt/kata/bin/containerd-shim-kata-v2 -namespace lab12 -address /run/containerd/containerd.sock -publish-binary  -id 7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe",
+              "pss_kib": 32572
             },
             {
-              "pid": 10333,
-              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/shared --fd=3 --thread-pool-size=1 --announce-submounts",
-              "pss_kib": 1020
+              "pid": 8048,
+              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/shared --fd=3 --thread-pool-size=1 --announce-submounts",
+              "pss_kib": 1022
             },
             {
-              "pid": 10334,
-              "command": "/opt/kata/bin/qemu-system-aarch64 -name sandbox-d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92 -uuid 9715fd5b-2469-4d3c-b383-96a7f9edab06 -machine virt,usb=off,accel=kvm,gic-version=host,msi=gicv2m -cpu host, -qmp unix:fd=3,server=on,wait=off -m 2048M,slots=10,maxmem=4919M -device pci-bridge,bus=pcie.0,id=pci-bridge-0,chassis_nr=1,shpc=off,addr=2,io-reserve=4k,mem-reserve=1m,pref64-reserve=1m -device virtio-serial-pci,disable-modern=false,id=serial0 -device virtconsole,chardev=charconsole0,id=console0 -chardev socket,id=charconsole0,path=/run/vc/vm/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/console.sock,server=on,wait=off -device virtio-blk-pci,disable-modern=false,drive=image-97491b43c868d2c8,config-wce=off,share-rw=on,serial=image-97491b43c868d2c8 -drive id=image-97491b43c868d2c8,file=/opt/kata/share/kata-containers/kata-ubuntu-noble.image,aio=threads,format=raw,if=none,readonly=on -device virtio-scsi-pci,id=scsi0,disable-modern=false -object rng-random,id=rng0,filename=/dev/urandom -device virtio-rng-pci,rng=rng0 -device pcie-root-port,id=rp0,bus=pcie.0,chassis=0,slot=0,multifunction=off -device vhost-vsock-pci,disable-modern=false,vhostfd=4,id=vsock-1308374360,guest-cid=1308374360,bus=pcie.0 -chardev socket,id=char-64254cfab836a467,path=/run/vc/vm/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/vhost-fs.sock -device vhost-user-fs-pci,chardev=char-64254cfab836a467,tag=kataShared,queue-size=1024,bus=pcie.0 -rtc base=utc,driftfix=slew,clock=host -global kvm-pit.lost_tick_policy=discard -vga none -no-user-config -nodefaults -nographic --no-reboot -object memory-backend-file,id=dimm1,size=2048M,mem-path=/dev/shm,share=on -numa node,memdev=dimm1 -kernel /opt/kata/share/kata-containers/vmlinux-6.18.35-202 -append iommu.passthrough=0 root=/dev/vda1 rootflags=data=ordered,errors=remount-ro ro rootfstype=ext4 console=hvc0 console=hvc1 quiet systemd.show_status=false panic=1 nr_cpus=1 selinux=0 systemd.unit=kata-containers.target systemd.mask=systemd-networkd.service systemd.mask=systemd-networkd.socket scsi_mod.scan=none agent.cdh_api_timeout=50 cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 -pidfile /run/vc/vm/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/pid -smp 1,cores=1,threads=1,sockets=1,maxcpus=1",
-              "pss_kib": 188244
+              "pid": 8049,
+              "command": "/opt/kata/bin/qemu-system-aarch64 -name sandbox-7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe -uuid e89b3444-f6d9-43c0-bbbd-bc0b67f61542 -machine virt,usb=off,accel=kvm,gic-version=host,msi=gicv2m -cpu host, -qmp unix:fd=3,server=on,wait=off -m 2048M,slots=10,maxmem=4919M -device pci-bridge,bus=pcie.0,id=pci-bridge-0,chassis_nr=1,shpc=off,addr=2,io-reserve=4k,mem-reserve=1m,pref64-reserve=1m -device virtio-serial-pci,disable-modern=false,id=serial0 -device virtconsole,chardev=charconsole0,id=console0 -chardev socket,id=charconsole0,path=/run/vc/vm/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/console.sock,server=on,wait=off -device virtio-blk-pci,disable-modern=false,drive=image-2ecc550b248f3f93,config-wce=off,share-rw=on,serial=image-2ecc550b248f3f93 -drive id=image-2ecc550b248f3f93,file=/opt/kata/share/kata-containers/kata-ubuntu-noble.image,aio=threads,format=raw,if=none,readonly=on -device virtio-scsi-pci,id=scsi0,disable-modern=false -object rng-random,id=rng0,filename=/dev/urandom -device virtio-rng-pci,rng=rng0 -device pcie-root-port,id=rp0,bus=pcie.0,chassis=0,slot=0,multifunction=off -device vhost-vsock-pci,disable-modern=false,vhostfd=4,id=vsock-1293714536,guest-cid=1293714536,bus=pcie.0 -chardev socket,id=char-9815ae467678586a,path=/run/vc/vm/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/vhost-fs.sock -device vhost-user-fs-pci,chardev=char-9815ae467678586a,tag=kataShared,queue-size=1024,bus=pcie.0 -rtc base=utc,driftfix=slew,clock=host -global kvm-pit.lost_tick_policy=discard -vga none -no-user-config -nodefaults -nographic --no-reboot -object memory-backend-file,id=dimm1,size=2048M,mem-path=/dev/shm,share=on -numa node,memdev=dimm1 -kernel /opt/kata/share/kata-containers/vmlinux-6.18.35-202 -append iommu.passthrough=0 root=/dev/vda1 rootflags=data=ordered,errors=remount-ro ro rootfstype=ext4 console=hvc0 console=hvc1 quiet systemd.show_status=false panic=1 nr_cpus=1 selinux=0 systemd.unit=kata-containers.target systemd.mask=systemd-networkd.service systemd.mask=systemd-networkd.socket scsi_mod.scan=none agent.cdh_api_timeout=50 cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 -pidfile /run/vc/vm/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/pid -smp 1,cores=1,threads=1,sockets=1,maxcpus=1",
+              "pss_kib": 188652
             },
             {
-              "pid": 10338,
-              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/shared --fd=3 --thread-pool-size=1 --announce-submounts",
-              "pss_kib": 2028
+              "pid": 8051,
+              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/shared --fd=3 --thread-pool-size=1 --announce-submounts",
+              "pss_kib": 2078
             },
             {
-              "pid": 10464,
+              "pid": 8179,
               "command": "/usr/local/bin/nerdctl _NERDCTL_INTERNAL_LOGGING /var/lib/nerdctl/1935db59",
-              "pss_kib": 29728
+              "pss_kib": 29756
             }
           ],
-          "total_pss_kib": 256432
+          "total_pss_kib": 254080
         },
         {
           "processes": [
             {
-              "pid": 10323,
-              "command": "/opt/kata/bin/containerd-shim-kata-v2 -namespace lab12 -address /run/containerd/containerd.sock -publish-binary  -id d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92",
-              "pss_kib": 35412
+              "pid": 8038,
+              "command": "/opt/kata/bin/containerd-shim-kata-v2 -namespace lab12 -address /run/containerd/containerd.sock -publish-binary  -id 7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe",
+              "pss_kib": 32572
             },
             {
-              "pid": 10333,
-              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/shared --fd=3 --thread-pool-size=1 --announce-submounts",
-              "pss_kib": 1020
+              "pid": 8048,
+              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/shared --fd=3 --thread-pool-size=1 --announce-submounts",
+              "pss_kib": 1022
             },
             {
-              "pid": 10334,
-              "command": "/opt/kata/bin/qemu-system-aarch64 -name sandbox-d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92 -uuid 9715fd5b-2469-4d3c-b383-96a7f9edab06 -machine virt,usb=off,accel=kvm,gic-version=host,msi=gicv2m -cpu host, -qmp unix:fd=3,server=on,wait=off -m 2048M,slots=10,maxmem=4919M -device pci-bridge,bus=pcie.0,id=pci-bridge-0,chassis_nr=1,shpc=off,addr=2,io-reserve=4k,mem-reserve=1m,pref64-reserve=1m -device virtio-serial-pci,disable-modern=false,id=serial0 -device virtconsole,chardev=charconsole0,id=console0 -chardev socket,id=charconsole0,path=/run/vc/vm/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/console.sock,server=on,wait=off -device virtio-blk-pci,disable-modern=false,drive=image-97491b43c868d2c8,config-wce=off,share-rw=on,serial=image-97491b43c868d2c8 -drive id=image-97491b43c868d2c8,file=/opt/kata/share/kata-containers/kata-ubuntu-noble.image,aio=threads,format=raw,if=none,readonly=on -device virtio-scsi-pci,id=scsi0,disable-modern=false -object rng-random,id=rng0,filename=/dev/urandom -device virtio-rng-pci,rng=rng0 -device pcie-root-port,id=rp0,bus=pcie.0,chassis=0,slot=0,multifunction=off -device vhost-vsock-pci,disable-modern=false,vhostfd=4,id=vsock-1308374360,guest-cid=1308374360,bus=pcie.0 -chardev socket,id=char-64254cfab836a467,path=/run/vc/vm/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/vhost-fs.sock -device vhost-user-fs-pci,chardev=char-64254cfab836a467,tag=kataShared,queue-size=1024,bus=pcie.0 -rtc base=utc,driftfix=slew,clock=host -global kvm-pit.lost_tick_policy=discard -vga none -no-user-config -nodefaults -nographic --no-reboot -object memory-backend-file,id=dimm1,size=2048M,mem-path=/dev/shm,share=on -numa node,memdev=dimm1 -kernel /opt/kata/share/kata-containers/vmlinux-6.18.35-202 -append iommu.passthrough=0 root=/dev/vda1 rootflags=data=ordered,errors=remount-ro ro rootfstype=ext4 console=hvc0 console=hvc1 quiet systemd.show_status=false panic=1 nr_cpus=1 selinux=0 systemd.unit=kata-containers.target systemd.mask=systemd-networkd.service systemd.mask=systemd-networkd.socket scsi_mod.scan=none agent.cdh_api_timeout=50 cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 -pidfile /run/vc/vm/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/pid -smp 1,cores=1,threads=1,sockets=1,maxcpus=1",
-              "pss_kib": 188244
+              "pid": 8049,
+              "command": "/opt/kata/bin/qemu-system-aarch64 -name sandbox-7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe -uuid e89b3444-f6d9-43c0-bbbd-bc0b67f61542 -machine virt,usb=off,accel=kvm,gic-version=host,msi=gicv2m -cpu host, -qmp unix:fd=3,server=on,wait=off -m 2048M,slots=10,maxmem=4919M -device pci-bridge,bus=pcie.0,id=pci-bridge-0,chassis_nr=1,shpc=off,addr=2,io-reserve=4k,mem-reserve=1m,pref64-reserve=1m -device virtio-serial-pci,disable-modern=false,id=serial0 -device virtconsole,chardev=charconsole0,id=console0 -chardev socket,id=charconsole0,path=/run/vc/vm/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/console.sock,server=on,wait=off -device virtio-blk-pci,disable-modern=false,drive=image-2ecc550b248f3f93,config-wce=off,share-rw=on,serial=image-2ecc550b248f3f93 -drive id=image-2ecc550b248f3f93,file=/opt/kata/share/kata-containers/kata-ubuntu-noble.image,aio=threads,format=raw,if=none,readonly=on -device virtio-scsi-pci,id=scsi0,disable-modern=false -object rng-random,id=rng0,filename=/dev/urandom -device virtio-rng-pci,rng=rng0 -device pcie-root-port,id=rp0,bus=pcie.0,chassis=0,slot=0,multifunction=off -device vhost-vsock-pci,disable-modern=false,vhostfd=4,id=vsock-1293714536,guest-cid=1293714536,bus=pcie.0 -chardev socket,id=char-9815ae467678586a,path=/run/vc/vm/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/vhost-fs.sock -device vhost-user-fs-pci,chardev=char-9815ae467678586a,tag=kataShared,queue-size=1024,bus=pcie.0 -rtc base=utc,driftfix=slew,clock=host -global kvm-pit.lost_tick_policy=discard -vga none -no-user-config -nodefaults -nographic --no-reboot -object memory-backend-file,id=dimm1,size=2048M,mem-path=/dev/shm,share=on -numa node,memdev=dimm1 -kernel /opt/kata/share/kata-containers/vmlinux-6.18.35-202 -append iommu.passthrough=0 root=/dev/vda1 rootflags=data=ordered,errors=remount-ro ro rootfstype=ext4 console=hvc0 console=hvc1 quiet systemd.show_status=false panic=1 nr_cpus=1 selinux=0 systemd.unit=kata-containers.target systemd.mask=systemd-networkd.service systemd.mask=systemd-networkd.socket scsi_mod.scan=none agent.cdh_api_timeout=50 cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 -pidfile /run/vc/vm/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/pid -smp 1,cores=1,threads=1,sockets=1,maxcpus=1",
+              "pss_kib": 188652
             },
             {
-              "pid": 10338,
-              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/shared --fd=3 --thread-pool-size=1 --announce-submounts",
-              "pss_kib": 2028
+              "pid": 8051,
+              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/shared --fd=3 --thread-pool-size=1 --announce-submounts",
+              "pss_kib": 2078
             },
             {
-              "pid": 10464,
+              "pid": 8179,
               "command": "/usr/local/bin/nerdctl _NERDCTL_INTERNAL_LOGGING /var/lib/nerdctl/1935db59",
-              "pss_kib": 29728
+              "pss_kib": 29756
             }
           ],
-          "total_pss_kib": 256432
+          "total_pss_kib": 254080
         },
         {
           "processes": [
             {
-              "pid": 10323,
-              "command": "/opt/kata/bin/containerd-shim-kata-v2 -namespace lab12 -address /run/containerd/containerd.sock -publish-binary  -id d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92",
-              "pss_kib": 35412
+              "pid": 8038,
+              "command": "/opt/kata/bin/containerd-shim-kata-v2 -namespace lab12 -address /run/containerd/containerd.sock -publish-binary  -id 7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe",
+              "pss_kib": 32572
             },
             {
-              "pid": 10333,
-              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/shared --fd=3 --thread-pool-size=1 --announce-submounts",
-              "pss_kib": 1020
+              "pid": 8048,
+              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/shared --fd=3 --thread-pool-size=1 --announce-submounts",
+              "pss_kib": 1022
             },
             {
-              "pid": 10334,
-              "command": "/opt/kata/bin/qemu-system-aarch64 -name sandbox-d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92 -uuid 9715fd5b-2469-4d3c-b383-96a7f9edab06 -machine virt,usb=off,accel=kvm,gic-version=host,msi=gicv2m -cpu host, -qmp unix:fd=3,server=on,wait=off -m 2048M,slots=10,maxmem=4919M -device pci-bridge,bus=pcie.0,id=pci-bridge-0,chassis_nr=1,shpc=off,addr=2,io-reserve=4k,mem-reserve=1m,pref64-reserve=1m -device virtio-serial-pci,disable-modern=false,id=serial0 -device virtconsole,chardev=charconsole0,id=console0 -chardev socket,id=charconsole0,path=/run/vc/vm/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/console.sock,server=on,wait=off -device virtio-blk-pci,disable-modern=false,drive=image-97491b43c868d2c8,config-wce=off,share-rw=on,serial=image-97491b43c868d2c8 -drive id=image-97491b43c868d2c8,file=/opt/kata/share/kata-containers/kata-ubuntu-noble.image,aio=threads,format=raw,if=none,readonly=on -device virtio-scsi-pci,id=scsi0,disable-modern=false -object rng-random,id=rng0,filename=/dev/urandom -device virtio-rng-pci,rng=rng0 -device pcie-root-port,id=rp0,bus=pcie.0,chassis=0,slot=0,multifunction=off -device vhost-vsock-pci,disable-modern=false,vhostfd=4,id=vsock-1308374360,guest-cid=1308374360,bus=pcie.0 -chardev socket,id=char-64254cfab836a467,path=/run/vc/vm/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/vhost-fs.sock -device vhost-user-fs-pci,chardev=char-64254cfab836a467,tag=kataShared,queue-size=1024,bus=pcie.0 -rtc base=utc,driftfix=slew,clock=host -global kvm-pit.lost_tick_policy=discard -vga none -no-user-config -nodefaults -nographic --no-reboot -object memory-backend-file,id=dimm1,size=2048M,mem-path=/dev/shm,share=on -numa node,memdev=dimm1 -kernel /opt/kata/share/kata-containers/vmlinux-6.18.35-202 -append iommu.passthrough=0 root=/dev/vda1 rootflags=data=ordered,errors=remount-ro ro rootfstype=ext4 console=hvc0 console=hvc1 quiet systemd.show_status=false panic=1 nr_cpus=1 selinux=0 systemd.unit=kata-containers.target systemd.mask=systemd-networkd.service systemd.mask=systemd-networkd.socket scsi_mod.scan=none agent.cdh_api_timeout=50 cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 -pidfile /run/vc/vm/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/pid -smp 1,cores=1,threads=1,sockets=1,maxcpus=1",
-              "pss_kib": 188244
+              "pid": 8049,
+              "command": "/opt/kata/bin/qemu-system-aarch64 -name sandbox-7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe -uuid e89b3444-f6d9-43c0-bbbd-bc0b67f61542 -machine virt,usb=off,accel=kvm,gic-version=host,msi=gicv2m -cpu host, -qmp unix:fd=3,server=on,wait=off -m 2048M,slots=10,maxmem=4919M -device pci-bridge,bus=pcie.0,id=pci-bridge-0,chassis_nr=1,shpc=off,addr=2,io-reserve=4k,mem-reserve=1m,pref64-reserve=1m -device virtio-serial-pci,disable-modern=false,id=serial0 -device virtconsole,chardev=charconsole0,id=console0 -chardev socket,id=charconsole0,path=/run/vc/vm/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/console.sock,server=on,wait=off -device virtio-blk-pci,disable-modern=false,drive=image-2ecc550b248f3f93,config-wce=off,share-rw=on,serial=image-2ecc550b248f3f93 -drive id=image-2ecc550b248f3f93,file=/opt/kata/share/kata-containers/kata-ubuntu-noble.image,aio=threads,format=raw,if=none,readonly=on -device virtio-scsi-pci,id=scsi0,disable-modern=false -object rng-random,id=rng0,filename=/dev/urandom -device virtio-rng-pci,rng=rng0 -device pcie-root-port,id=rp0,bus=pcie.0,chassis=0,slot=0,multifunction=off -device vhost-vsock-pci,disable-modern=false,vhostfd=4,id=vsock-1293714536,guest-cid=1293714536,bus=pcie.0 -chardev socket,id=char-9815ae467678586a,path=/run/vc/vm/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/vhost-fs.sock -device vhost-user-fs-pci,chardev=char-9815ae467678586a,tag=kataShared,queue-size=1024,bus=pcie.0 -rtc base=utc,driftfix=slew,clock=host -global kvm-pit.lost_tick_policy=discard -vga none -no-user-config -nodefaults -nographic --no-reboot -object memory-backend-file,id=dimm1,size=2048M,mem-path=/dev/shm,share=on -numa node,memdev=dimm1 -kernel /opt/kata/share/kata-containers/vmlinux-6.18.35-202 -append iommu.passthrough=0 root=/dev/vda1 rootflags=data=ordered,errors=remount-ro ro rootfstype=ext4 console=hvc0 console=hvc1 quiet systemd.show_status=false panic=1 nr_cpus=1 selinux=0 systemd.unit=kata-containers.target systemd.mask=systemd-networkd.service systemd.mask=systemd-networkd.socket scsi_mod.scan=none agent.cdh_api_timeout=50 cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 -pidfile /run/vc/vm/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/pid -smp 1,cores=1,threads=1,sockets=1,maxcpus=1",
+              "pss_kib": 188652
             },
             {
-              "pid": 10338,
-              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/d26ce04b54c00bf31cff4ebaa998b1ed08f0caa42fa8dac1372d14e1e9097c92/shared --fd=3 --thread-pool-size=1 --announce-submounts",
-              "pss_kib": 2028
+              "pid": 8051,
+              "command": "/opt/kata/libexec/virtiofsd --syslog --cache=auto --shared-dir=/run/kata-containers/shared/sandboxes/7ca85a6a949df4fbef8c73afcd51d28d5ddf768414a8eafe09f2166041f9ccbe/shared --fd=3 --thread-pool-size=1 --announce-submounts",
+              "pss_kib": 2078
             },
             {
-              "pid": 10464,
+              "pid": 8179,
               "command": "/usr/local/bin/nerdctl _NERDCTL_INTERNAL_LOGGING /var/lib/nerdctl/1935db59",
-              "pss_kib": 29728
+              "pss_kib": 29756
             }
           ],
-          "total_pss_kib": 256432
+          "total_pss_kib": 254080
         }
       ],
-      "median_pss_kib": 256432
+      "median_pss_kib": 254080
     }
   },
   "exact_privileged": {
@@ -245,27 +245,12 @@
     },
     "kata": {
       "before": "original",
-      "exit_code": 1,
-      "host_file_after": "original",
-      "device_count": null,
-      "cap_eff": null,
-      "error": "Conflicting resource updates for host_major=253 host_minor=1"
+      "exit_code": 0,
+      "host_file_after": "OVERWRITTEN",
+      "device_count": 192,
+      "cap_eff": "CapEff:\t000001ffffffffff"
     }
   },
-  "privileged_without_host_devices": {
-    "runc": {
-      "before": "original",
-      "exit_code": 0,
-      "host_file_after": "OVERWRITTEN",
-      "device_count": 15,
-      "cap_eff": "CapEff:\t000001ffffffffff"
-    },
-    "kata": {
-      "before": "original",
-      "exit_code": 0,
-      "host_file_after": "OVERWRITTEN",
-      "device_count": 14,
-      "cap_eff": "CapEff:\t000001ffffffffff"
-    }
-  }
+  "command_count": 35,
+  "all_command_exit_codes_zero": true
 }

@@ -10,7 +10,6 @@ import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--output', type=Path, default=Path('results'))
-parser.add_argument('--skip-memory', action='store_true', help='Reuse existing memory samples while retesting bonus')
 args = parser.parse_args()
 args.output.mkdir(parents=True, exist_ok=True)
 BASE = ['nerdctl', '--namespace', 'lab12']
@@ -23,12 +22,12 @@ def save():
     (args.output / 'memory-and-bind.json').write_text(json.dumps(result, indent=2) + '\n')
 
 
-def command(argv, *, check=True):
+def command(argv):
     p = subprocess.run(argv, text=True, capture_output=True, timeout=180)
     result['commands'].append({'argv': argv, 'exit_code': p.returncode,
                                'stdout': p.stdout, 'stderr': p.stderr})
     save()
-    if check and p.returncode:
+    if p.returncode:
         raise RuntimeError(result['commands'][-1])
     return p.stdout.strip()
 
@@ -52,62 +51,53 @@ def sample(new_pids):
 
 
 assert os.geteuid() == 0 and Path('/dev/kvm').is_char_device()
-if args.skip_memory:
-    result['memory'] = json.loads((args.output / 'memory-and-bind.json').read_text())['memory']
-else:
-    for runtime in ('runc', 'kata'):
-        flag = [] if runtime == 'runc' else ['--runtime=io.containerd.kata.v2']
-        name = 'lab12-memory-' + runtime
-        before = pids()
-        command(BASE + ['run', '-d', '--name', name] + flag + [IMAGE, 'sleep', '300'])
-        try:
-            time.sleep(5)
-            new = pids() - before
-            samples = []
-            for _ in range(3):
-                samples.append(sample(new))
-                time.sleep(1)
-            assert all(s['total_pss_kib'] > 0 for s in samples), samples
-            result['memory'][runtime] = {'samples': samples,
-                                         'median_pss_kib': statistics.median(s['total_pss_kib'] for s in samples)}
-        finally:
-            command(BASE + ['rm', '-f', name])
-        save()
+for runtime in ('runc', 'kata'):
+    flag = [] if runtime == 'runc' else ['--runtime=io.containerd.kata.v2']
+    name = 'lab12-memory-' + runtime
+    before = pids()
+    command(BASE + ['run', '-d', '--name', name] + flag + [IMAGE, 'sleep', '300'])
+    try:
+        time.sleep(5)
+        new = pids() - before
+        samples = []
+        for _ in range(3):
+            samples.append(sample(new))
+            time.sleep(1)
+        assert all(s['total_pss_kib'] > 0 for s in samples), samples
+        result['memory'][runtime] = {'samples': samples,
+                                     'median_pss_kib': statistics.median(s['total_pss_kib'] for s in samples)}
+    finally:
+        command(BASE + ['rm', '-f', name])
+    save()
 
 # Sentinel lives only in the disposable Linux VM, not in a macOS bind mount.
 target = Path('/tmp/lab12-target')
 if target.exists():
     raise RuntimeError('Refusing to overwrite pre-existing /tmp/lab12-target; remove the previous lab sentinel first')
 try:
-    for mode, extra in [('bonus', []), ('without_host_devices', ['--security-opt', 'privileged-without-host-devices'])]:
-        result[mode] = {}
-        for runtime in ('runc', 'kata'):
-            flag = [] if runtime == 'runc' else ['--runtime=io.containerd.kata.v2']
-            prefix = BASE + ['run', '--rm'] + flag + ['--privileged'] + extra
-            target.write_text('original\n')
-            output = command(prefix + ['-v', '/tmp:/host_tmp', IMAGE, 'sh', '-c',
-                                       'echo "OVERWRITTEN" > /host_tmp/lab12-target'], check=False)
-            rec = result['commands'][-1]
-            data = {'before': 'original', 'stdout': output, 'exit_code': rec['exit_code'],
-                    'stderr': rec['stderr'], 'host_file_after': target.read_text().strip()}
-            probe = command(prefix + [IMAGE, 'sh', '-c',
-                            'ls /dev | wc -l; grep ^CapEff /proc/1/status'], check=False)
-            rec = result['commands'][-1]
-            data['privileged_probe'] = {'exit_code': rec['exit_code'], 'stdout': probe, 'stderr': rec['stderr']}
-            if rec['exit_code'] == 0:
-                lines = probe.splitlines()
-                data['device_count'] = int(lines[0])
-                data['cap_eff'] = lines[1]
-            else:
-                data['device_count'] = None
-                data['cap_eff'] = None
-            result[mode][runtime] = data
-            save()
+    for runtime in ('runc', 'kata'):
+        flag = [] if runtime == 'runc' else ['--runtime=io.containerd.kata.v2']
+        prefix = BASE + ['run', '--rm'] + flag + ['--privileged']
+        target.write_text('original\n')
+        output = command(prefix + ['-v', '/tmp:/host_tmp', IMAGE, 'sh', '-c',
+                                   'echo "OVERWRITTEN" > /host_tmp/lab12-target'])
+        rec = result['commands'][-1]
+        data = {'before': 'original', 'stdout': output, 'exit_code': rec['exit_code'],
+                'stderr': rec['stderr'], 'host_file_after': target.read_text().strip()}
+        assert data['host_file_after'] == 'OVERWRITTEN', data
+        probe = command(prefix + [IMAGE, 'sh', '-c',
+                        'ls /dev | wc -l; grep ^CapEff /proc/1/status'])
+        rec = result['commands'][-1]
+        data['privileged_probe'] = {'exit_code': rec['exit_code'], 'stdout': probe, 'stderr': rec['stderr']}
+        lines = probe.splitlines()
+        data['device_count'] = int(lines[0])
+        data['cap_eff'] = lines[1]
+        assert data['device_count'] > 15, data
+        assert int(lines[1].split()[1], 16) == 0x1ffffffffff, data
+        result['bonus'][runtime] = data
+        save()
 finally:
     target.unlink(missing_ok=True)
-assert result['bonus']['runc']['host_file_after'] == 'OVERWRITTEN'
-for data in result['without_host_devices'].values():
-    assert data['exit_code'] == 0 and data['privileged_probe']['exit_code'] == 0, data
-    assert data['host_file_after'] == 'OVERWRITTEN', data
+assert all(c['exit_code'] == 0 for c in result['commands'])
 print(json.dumps({k: v for k, v in result.items() if k != 'commands'}, indent=2))
-print('PASS: memory sampled, exact bonus outcomes captured, privileged guest and writable export verified')
+print('PASS: memory sampled; exact privileged commands, host writes, device counts and full capability masks verified for both runtimes')

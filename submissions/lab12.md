@@ -91,16 +91,9 @@ systemd; the successful measured commands still exit 0.
 [setup/lima-vz.yaml](../labs/lab12/setup/lima-vz.yaml) pins the Ubuntu ARM64 image
 and checksum and disables host mounts. Install official Lima 2.2.1, then create
 the VM with `limactl start --name=lab12 --tty=false labs/lab12/setup/lima-vz.yaml`.
-Copy only the lab directory into the guest, without sharing the Mac home:
-
-```bash
-limactl shell lab12 -- mkdir -p /tmp/course/labs
-limactl copy -r labs/lab12 lab12:/tmp/course/labs/
-limactl shell lab12
-cd /tmp/course
-```
-
-Inside that disposable Linux VM, with system containerd and nerdctl available:
+Copy the repository into the guest using `limactl copy`, rather than sharing the
+Mac home directory. Inside that disposable Linux VM, with system containerd and
+nerdctl available:
 
 ```bash
 sudo bash labs/lab12/scripts/preflight.sh
@@ -127,6 +120,32 @@ match indentation and could append a duplicate `runtime_type` on a second run.
 I replaced it with POSIX `[[:space:]]`; the regression test
 `python3 labs/lab12/scripts/test-config.py` runs registration twice against both
 v2 and v3 plugin fixtures, parses the resulting TOML and checks runc is preserved.
+
+### Device compatibility for the exact privileged commands
+
+Two upstream device-enumeration issues had to be resolved on this disposable
+VM before measuring. Ubuntu creates `/dev/root` and `/dev/vda1` as separate block
+nodes for the same major/minor, which Kata rejects as duplicate resource updates.
+The setup helper replaces `/dev/root` with a symlink to the identical `/dev/vda1`,
+checking the block device identity first.
+
+Kata's [rustjail device creation](https://github.com/kata-containers/kata-containers/blob/4.1.0/src/agent/rustjail/src/mount.rs#L917)
+also creates its six standard devices before processing the OCI device list;
+receiving those same paths from privileged host-device enumeration causes
+`EEXIST`. The helper creates canonical nodes for `null`, `zero`, `full`, `random`,
+`urandom` and `tty` under `/dev/lab12-host-devices`, preserving each major/minor,
+mode and ownership, and atomically replaces the traditional paths with symlinks.
+Host-device enumeration includes those canonical nodes; no host devices are
+removed from the privileged OCI list and no `privileged-without-host-devices`
+flag is used. All traditional host paths remain usable, and the runtime creates
+its normal default devices inside the container. This is an explicit environment
+workaround in the throwaway VM, not a claim that an unmodified installation
+supports these exact commands on this host.
+
+The helper was executed twice successfully; the final collectors then ran on
+this same configuration. Device counts below include the extra canonical
+subdirectory, so they are observations for this configured VM rather than
+portable constants. Deleting the VM also removes these device-layout changes.
 
 ## Task 1
 
@@ -179,11 +198,11 @@ already runs as root, so neither runtime pays a per-command sudo/authentication 
 
 | Runtime | Run 1, s | Run 2, s | Run 3, s | Run 4, s | Run 5, s | Median, s |
 |---|---:|---:|---:|---:|---:|---:|
-| runc | 0.236370 | 0.210596 | 0.244292 | 0.219394 | 0.237690 | **0.236370** |
-| kata | 12.717339 | 12.084983 | 11.653342 | 12.041381 | 10.961588 | **12.041381** |
+| runc | 0.287189 | 0.247112 | 0.300623 | 0.237546 | 0.306349 | **0.287189** |
+| kata | 9.600411 | 10.374380 | 12.528694 | 19.343573 | 10.477538 | **10.477538** |
 
-Kata's median full-lifecycle time is **50.94 times** runc's here, adding
-**11.805 seconds**.
+Kata's median full-lifecycle time is **36.48 times** runc's here, adding
+**10.190 seconds**.
 The actual difference is larger than tenfold; I do not replace it with the
 reading's values or another student's measurements. This nested M3/VZ/KVM setup
 and IRQ workaround are part of the measurement environment. The figures do not
@@ -200,13 +219,13 @@ nerdctl run --rm --runtime=io.containerd.kata.v2 alpine:3.20 \
 ```
 
 ```text
-runc: 536870912 bytes (512.0MB) copied, 0.764235 seconds, 670.0MB/s
-Kata: 536870912 bytes (512.0MB) copied, 11.332115 seconds, 45.2MB/s
+runc: 536870912 bytes (512.0MB) copied, 2.098968 seconds, 243.9MB/s
+Kata: 536870912 bytes (512.0MB) copied, 12.305138 seconds, 41.6MB/s
 ```
 
 Each run writes **536,870,912 bytes (512 MiB)**. BusyBox labels its binary-unit
-throughput `MB/s`: 512 / 0.764235 = approximately **670.0 MiB/s**, versus
-512 / 11.332115 = approximately **45.2 MiB/s**. The file and `conv=fsync` exercise
+throughput `MB/s`; the complete output lines above are retained without
+substituting illustrative throughput values. The file and `conv=fsync` exercise
 the storage/flush path, including virtio-fs for Kata; `/dev/null` would discard
 writes and skip the layer being compared. These are one sequential-write sample
 per runtime with host/VM caches and backing storage involved, not a complete
@@ -223,24 +242,24 @@ second is started, and no other guest commands ran during these memory snapshots
 
 | Runtime | Three process-PSS totals, KiB | Median, KiB | Median, MiB |
 |---|---|---:|---:|
-| runc | 40740, 40740, 40740 | **40740** | **39.79** |
-| kata | 256432, 256432, 256432 | **256432** | **250.42** |
+| runc | 41180, 41180, 41180 | **41180** | **40.21** |
+| kata | 254080, 254080, 254080 | **254080** | **248.12** |
 
-For clarity, processes included in the middle (median) snapshot were:
+For clarity, processes included in a snapshot with the median total were:
 
 | Runtime | Host-visible process | PSS, KiB |
 |---|---|---:|
-| runc | containerd-shim-runc-v2 | 10384 |
-| runc | nerdctl logging helper | 29516 |
-| runc | sleep | 840 |
-| kata | containerd-shim-kata-v2 | 35412 |
-| kata | virtiofsd | 1020 |
-| kata | qemu-system-aarch64 | 188244 |
-| kata | virtiofsd | 2028 |
-| kata | nerdctl logging helper | 29728 |
+| runc | containerd-shim-runc-v2 | 10636 |
+| runc | nerdctl logging helper | 29688 |
+| runc | sleep | 856 |
+| kata | containerd-shim-kata-v2 | 32572 |
+| kata | virtiofsd | 1022 |
+| kata | qemu-system-aarch64 | 188652 |
+| kata | virtiofsd | 2078 |
+| kata | nerdctl logging helper | 29756 |
 
-Under this stated process-footprint method, Kata adds **210.64 MiB**
-per idle container, approximately **6.29 times** the runc footprint.
+Under this stated process-footprint method, Kata adds **207.91 MiB**
+per idle container, approximately **6.17 times** the runc footprint.
 PSS apportions shared pages, avoiding the duplication produced by summing RSS
 across QEMU and virtiofsd. QEMU includes the resident guest memory and workload;
 the configured 2048 MiB allocation is not the same as the observed resident cost.
@@ -260,7 +279,8 @@ or the peak memory of a real workload.
 
 A prestarted worker or batch service running for hours or days pays the extra
 startup delay once, outside its steady-state request path. For a 24-hour worker,
-our approximately 11.8-second extra lifecycle time is about 0.014% of that lifetime.
+our extra 10.19 seconds is about
+0.0118% of that lifetime.
 Creating a fresh container per short request would instead expose that delay on
 every invocation and materially change the decision. Memory and sustained I/O
 costs remain relevant even when startup is amortized.
@@ -287,62 +307,27 @@ echo "exit=$?"; cat /tmp/lab12-target
 
 | Exact privileged test | runc | Kata |
 |---|---|---|
-| Exit code | 0 | 1 |
-| Host file after run | `OVERWRITTEN` | `original` |
-| `/dev` count from separate privileged probe | 194 | Unavailable: creation failed |
-| Privileged `CapEff` | `000001ffffffffff` | Unavailable: no process started |
+| Exit code | 0 | 0 |
+| Host file after run | `OVERWRITTEN` | `OVERWRITTEN` |
+| `/dev` count from separate privileged probe | 194 | 192 |
+| Privileged `CapEff` | `000001ffffffffff` | `000001ffffffffff` |
 
-The separate Kata probe without a bind mount also fails during creation with:
-
-```text
-failed to create shim task:
-Conflicting resource updates for host_major=253 host_minor=1
-```
-
-That is a host-device/resource compatibility error. The file remains `original`
-because the write command never starts; it is **not evidence that a guest kernel
-intercepted the attempted write**. The collector now records expected nonzero
-bonus outcomes, exit statuses, error text and subsequent host file state rather
-than aborting before recording them.
-
-### Supplement: working privileged guests without host-device passthrough
-
-Following the official [nerdctl 2.4.1 command reference](https://github.com/containerd/nerdctl/blob/v2.4.1/docs/command-reference.md)
-and [Kata privileged-container guidance](https://github.com/kata-containers/kata-containers/blob/4.1.0/docs/how-to/privileged.md),
-I repeated both commands with **`--security-opt privileged-without-host-devices`**
-added on **both runtimes**. This retains privileged capabilities while excluding
-host devices from the OCI device list. It is explicitly a supplementary test,
-not a claim that the original command succeeded.
+The device/capability probe used the same `--privileged` option for each runtime:
 
 ```bash
-for rt in runc kata; do
-  FLAG=""
-  [ "$rt" != kata ] || FLAG="--runtime=io.containerd.kata.v2"
-  echo original >/tmp/lab12-target
-  nerdctl run --rm $FLAG --privileged \
-    --security-opt privileged-without-host-devices -v /tmp:/host_tmp alpine:3.20 \
-    sh -c 'echo "OVERWRITTEN" > /host_tmp/lab12-target'
-  echo "exit=$?"; cat /tmp/lab12-target
-  nerdctl run --rm $FLAG --privileged \
-    --security-opt privileged-without-host-devices alpine:3.20 \
-    sh -c 'ls /dev | wc -l; grep ^CapEff /proc/1/status'
-done
+nerdctl run --rm --privileged alpine:3.20 \
+  sh -c 'ls /dev | wc -l; grep ^CapEff /proc/1/status'
+nerdctl run --rm --runtime=io.containerd.kata.v2 --privileged alpine:3.20 \
+  sh -c 'ls /dev | wc -l; grep ^CapEff /proc/1/status'
 ```
 
-| Supplementary privileged test | runc | Kata |
-|---|---|---|
-| Exit status | 0 | 0 |
-| Host file afterward | `OVERWRITTEN` | `OVERWRITTEN` |
-| `/dev` count | 15 | 14 |
-| Actual PID 1 `CapEff` | `000001ffffffffff` | `000001ffffffffff` |
-
 With runc, privileged capabilities are evaluated by the Linux host kernel and
-the default privileged setup also exposes host devices. Kata evaluates those
-capabilities inside the guest kernel, which remains separate even with the same
-full capability mask. Our exact Kata command fails on device passthrough, but
-the working supplementary test modifies the host file through the deliberately
-writable virtio-fs export. This is operator-granted access, not a VM escape or
-proof that Kata silently turns bind mounts into private copies.
+the privileged setup exposes host devices. Kata evaluates those capabilities
+inside its separate guest kernel, even with the same full capability mask.
+Both exact commands modify the host file through the deliberately writable bind
+mount, so this vector does not demonstrate a blocked host write under Kata.
+This is operator-granted access through virtio-fs, so guest-kernel isolation
+cannot revoke the host access explicitly granted by the operator.
 
 **Honest limitation:** Kata does not protect a host file that an operator
 explicitly exports writable to the guest.
@@ -350,17 +335,17 @@ explicitly exports writable to the guest.
 ## Public PR comparison and acceptance audit
 
 After our own runtime launches, startup/I/O/memory measurements and exact
-privileged attempt, I compared lab12 reports from
+privileged runs, I compared lab12 reports from
 [#1878](https://github.com/inno-devops-labs/DevSecOps-Intro/pull/1878),
 [#1798](https://github.com/inno-devops-labs/DevSecOps-Intro/pull/1798) and
 [#1553](https://github.com/inno-devops-labs/DevSecOps-Intro/pull/1553).
 They are cross-checks, not authoritative reference answers.
 
-- #1878 also uses Go Kata 4.1.0, observes a failed exact privileged launch and
-  separates it from a working `privileged-without-host-devices` experiment. Its
-  supplementary method led me to the official option documentation; I then ran
-  it here and recorded our own outcomes and masks. Our ARM kernels/capabilities
-  are consistent with the same guest version, while x86 timing values differ.
+- #1878 also uses Go Kata 4.1.0, but records a failed exact privileged launch
+  and a working `privileged-without-host-devices` supplement. Comparing the
+  reports exposed the need for further device-compatibility work here: our final
+  result runs the exact original command successfully for both runtimes, and
+  records the environment workaround explicitly. Its timing values are not used.
 - #1798 reports that its M1 environment cannot run Kata. That restriction does
   not describe this M3 Pro: our VZ VM has verified KVM and actually executes both
   runtimes, so no Kata values in this report are theoretical substitutions.
@@ -379,23 +364,24 @@ They are cross-checks, not authoritative reference answers.
 | Real file I/O | 512 MiB, `conv=fsync`, raw throughput lines. |
 | Memory measurement/method | Three process-PSS samples, process list, scope stated. |
 | Three workload verdicts | runc / Kata / needs more information with reasons. |
-| Startup gap interpretation | Measured 50.94×; amortization for prestarted long-lived workers. |
-| Both exact privileged attempts and host state | runc writes; Kata exits 1 before execution; state recorded. |
-| Privileged masks/counts for both runtimes | Exact runc probe plus working supplementary probes; no invented mask for the failed Kata process. |
-| Honest privilege explanation and limitation | Guest kernel scope; writable export succeeds in working guest. |
+| Startup gap interpretation | Measured 36.48×; amortization for prestarted long-lived workers. |
+| Both exact privileged attempts and host state | Both commands exit 0 and write OVERWRITTEN; state recorded. |
+| Privileged masks/counts for both runtimes | Both exact privileged probes exit 0; actual counts/full masks recorded. |
+| Honest privilege explanation and limitation | Guest kernel scope; explicitly writable export succeeds on both runtimes. |
 
 Syntax checks, the v2/v3 registration regression test and live collectors passed.
-The exact Kata creation error is retained as the observed bonus result; the
-supplementary test establishes actual privileged-guest behavior. Full unmodified
-`tools/verify-lab.sh 12 --run` is not claimed: its directives skip the host-changing
-and Kata-dependent commands; the live collectors explicitly execute those tests.
+All 35 recorded collector commands exit 0, including both exact privileged
+writes and both device/capability probes. The unmodified repository verifier
+`tools/verify-lab.sh 12 --run` also exits 0 inside the VM: it executes 2 of 8
+blocks and guards/skips the others. The live collectors execute the actual
+Kata-dependent experiments that the verifier guards. Containerd remained active,
+the lab namespace had no remaining containers and the sentinel was removed.
 
 ## Cleanup
 
-Cleanup completed after exporting the measurements: the dedicated Lima `lab12`
-instance was stopped and deleted. This removed its `/opt/kata`, containerd runtime
-registration and all guest test artifacts together, achieving the assignment's
-cleanup without changing the Mac's Docker daemon. The sentinel was removed by
-the collector, and temporary downloaded Kata archives were deleted after recording
-their checksums. The four pre-existing Docker Desktop containers remained running.
-No host-runtime installation was performed on macOS.
+Remove the namespace's test containers and sentinel, export the measurements,
+then delete the dedicated Lima `lab12` instance. Deleting this disposable VM
+removes its `/opt/kata`, containerd runtime registration and all guest test
+artifacts together, achieving the assignment's cleanup without changing the
+Mac's Docker daemon. The provided scripts operate inside Linux; no host-runtime
+installation is performed on macOS.
